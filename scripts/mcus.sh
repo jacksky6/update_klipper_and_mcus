@@ -7,14 +7,14 @@ declare -A mcu_version
 declare -A config_name
 declare -A is_klipper_fw
 declare -A mcu_app
-# Define an indexed array "mcu_order" to store the order of MCUs in mcus.ini
+# Define an indexed array "mcu_order" to store the order of MCUs in mcus.cfg
 mcu_order=()
 
 BUILD_ERROR=false
 
 # Define a function to initialize the flash_actions array from the config file
 function load_mcus_config() {
-  filename=${CONFIG:-$ukam_config/mcus.ini}
+  filename=${CONFIG:-$ukam_config/mcus.cfg}
   if [[ -f "$filename" ]]; then
     file_content=$(tr '\r' '\n' <"$filename")
 
@@ -273,7 +273,7 @@ function show_mcu_update_menu() {
 
     if [ ${#mcu_order[@]} -eq 0 ]; then
       echo -e "${YELLOW}未在 $filename 中找到已启用的 MCU 配置。${DEFAULT}"
-      echo "请编辑 ~/printer_data/config/ukam/mcus.ini 后重新运行。"
+      echo "请编辑 ~/printer_data/config/ukam/mcus.cfg 后重新运行。"
       read -r -p "输入 q 退出：" choice
       [[ "${choice,,}" == "q" ]] && return 0
       continue

@@ -6,7 +6,7 @@ usage() {
 
 UKAM：Klipper MCU 固件更新脚本。
 
-可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.ini'
+可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.cfg'
   -m, --menuconfig  为所有 MCU 显示 menuconfig（默认不显示）。
   -v, --verbose     用于调试，显示已解析的配置。
   -h, --help        显示此帮助信息并退出。
@@ -146,14 +146,9 @@ function link_config() {
     echo -e "${GREEN}  已创建配置目录：${DEFAULT}$ukam_config"
   fi
 
-  if [ ! -f "$ukam_config/mcus.ini" ]; then
-    if [ -f "$ukam_path/mcus.ini" ]; then
-      mv "$ukam_path/mcus.ini" "$ukam_config/mcus.ini"
-      echo -e "${GREEN}  已迁移现有 mcus.ini 配置。${DEFAULT}"
-    else
-      cp "$ukam_path/examples/mcus.ini" "$ukam_config/mcus.ini"
-      echo -e "${GREEN}  已复制示例 mcus.ini 配置。${DEFAULT}"
-    fi
+  if [ ! -f "$ukam_config/mcus.cfg" ]; then
+    cp "$ukam_path/examples/mcus.cfg" "$ukam_config/mcus.cfg"
+    echo -e "${GREEN}  已复制示例 mcus.cfg 配置。${DEFAULT}"
   fi
 
   if [ ! -d "$ukam_config/config" ]; then

@@ -37,8 +37,8 @@ UKAM 是一个用于批量更新 MCU 固件（主板、RPi、CAN、Pico 等）�
 - [使用方法](#使用方法)
   - [选项](#选项)
 - [主机端更新](#主机端更新)
-- [编辑 mcus.ini](#编辑-mcusini)
-  - [mcus.ini 示例](#mcusini-示例)
+- [编辑 mcus.cfg](#编辑-mcuscfg)
+  - [mcus.cfg 示例](#mcuscfg-示例)
     - [RPi 微控制器](#rpi-微控制器)
     - [串口连接（UART）](#串口连接uart)
     - [主板：USB 转 CAN 桥接模式（需要 Katapult）](#主板usb-转-can-桥接模式需要-katapult)
@@ -95,14 +95,14 @@ cd ~
 git clone https://github.com/jacksky6/update_klipper_and_mcus.git ukam
 ```
 
-首次运行以下命令时，UKAM 会提示本机尚未初始化，并询问是否创建所需目录和示例 `mcus.ini`：
+首次运行以下命令时，UKAM 会提示本机尚未初始化，并询问是否创建所需目录和示例 `mcus.cfg`：
 
 ```
 cd ukam
 ./ukam.sh
 ```
 
-确认初始化后，UKAM 不会更新 Klipper 或刷写 MCU，而是提示编辑 `~/printer_data/config/ukam/mcus.ini`。完成配置后再次运行 UKAM，即可进入 MCU 固件管理菜单。
+确认初始化后，UKAM 不会更新 Klipper 或刷写 MCU，而是提示编辑 `~/printer_data/config/ukam/mcus.cfg`。完成配置后再次运行 UKAM，即可进入 MCU 固件管理菜单。
 
 ## 通过 Moonraker 更新 UKAM
 
@@ -119,7 +119,7 @@ is_system_service: False
 
 ## 使用方法
 
-在终端运行 `~/<脚本目录>/ukam.sh` 会显示 MCU 固件状态表，不会立即刷写。表中会列出 `mcus.ini` 的全部已配置 MCU、当前固件版本、本机 Klipper/Kalico 对应的目标版本及更新状态。
+在终端运行 `~/<脚本目录>/ukam.sh` 会显示 MCU 固件状态表，不会立即刷写。表中会列出 `mcus.cfg` 的全部已配置 MCU、当前固件版本、本机 Klipper/Kalico 对应的目标版本及更新状态。
 
 在菜单中输入 MCU 前的序号可更新单个设备；输入 `a` 可更新全部需要更新的 MCU；输入 `r` 刷新版本列表；输入 `q` 退出。单个或批量更新结束后，UKAM 会刷新列表并回到菜单。
 
@@ -136,7 +136,7 @@ is_system_service: False
 
 UKAM 是一个 Klipper MCU 固件更新脚本。
 
-可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.ini'
+可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.cfg'
   -m, --menuconfig           为所有 MCU 显示 menuconfig（默认不显示）。
   -v, --verbose              用于调试，显示已解析的配置。
   -h, --help                 显示此帮助信息并退出。
@@ -150,12 +150,12 @@ UKAM 是一个 Klipper MCU 固件更新脚本。
 
 UKAM 不管理 Klipper、Moonraker、Mainsail 或 Fluidd 的安装、更新和回滚。建议使用 [KIAUH](https://github.com/dw-0/kiauh) 统一管理这些主机端组件；完成 Klipper/Kalico 更新后，再运行 UKAM 更新需要匹配版本的 MCU 固件。
 
-## 编辑 mcus.ini
+## 编辑 mcus.cfg
 
-`mcus.ini` 包含以下内容：
+`mcus.cfg` 包含以下内容：
 
 - **节（section）：** 方括号 `[]` 中为 MCU 自定义的名称，不一定与 Klipper 配置中的名称相同。
-- `klipper_section`：不带方括号的 Klipper 节名称，用于跟踪 MCU 固件版本。_提示：也可以在 `mcus.ini` 中使用与 Klipper 相同的节名称。_
+- `klipper_section`：不带方括号的 Klipper 节名称，用于跟踪 MCU 固件版本。_提示：也可以在 `mcus.cfg` 中使用与 Klipper 相同的节名称。_
 
 > [!NOTE]
 > 此项区分大小写。请确保 `klipper_section` 与 Klipper 配置中对应节的大小写完全一致。
@@ -179,7 +179,7 @@ UKAM 不管理 Klipper、Moonraker、Mainsail 或 Fluidd 的安装、更新和�
 >    -u     canbus_uuid（指定后可不提供 -t）
 > ```
 
-### mcus.ini 示例
+### mcus.cfg 示例
 
 #### RPi 微控制器
 
@@ -355,7 +355,7 @@ _来源：[Issue #12](https://github.com/fbeauKmi/update_klipper_and_mcus/issues
 > 配置名称中的空格会转换为下划线。
 
 **问：MCU 刷写失败，该怎么办？**
-答：确认 `mcus.ini` 配置正确。检查开发板状态，具体取决于连接方式；`lsusb` 和 `flashtool.py` 是常用工具。如果开发板可见，再次运行 `./ukam.sh`。
+答：确认 `mcus.cfg` 配置正确。检查开发板状态，具体取决于连接方式；`lsusb` 和 `flashtool.py` 是常用工具。如果开发板可见，再次运行 `./ukam.sh`。
 
 **问：UKAM 会更新 Katapult 吗？**
 答：不会。通常没有必要更新引导加载程序。

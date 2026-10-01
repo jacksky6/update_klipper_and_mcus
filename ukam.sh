@@ -59,14 +59,14 @@ function splash() {
 
 # Define the main function
 function main() {
-  if [[ ! -f "$ukam_config/mcus.ini" ]]; then
+  if [[ ! -f "$ukam_config/mcus.cfg" ]]; then
     echo ""
     ui_rule
     echo -e "${CYAN}  首次运行初始化${DEFAULT}"
     ui_rule
     echo "  检测到这是首次运行，本机尚未安装 UKAM 配置。"
     echo "  将创建配置目录并安装示例配置文件："
-    echo "  $ukam_config/mcus.ini"
+    echo "  $ukam_config/mcus.cfg"
     echo ""
 
     if ! prompt "是否现在初始化 UKAM？"; then
@@ -81,7 +81,7 @@ function main() {
     echo -e "${GREEN}  初始化完成${DEFAULT}"
     ui_rule
     echo "  请编辑以下文件，填写 MCU 的刷写配置："
-    echo "  $ukam_config/mcus.ini"
+    echo "  $ukam_config/mcus.cfg"
     echo ""
     echo "  配置完成后，再次运行：./ukam.sh"
     echo ""
