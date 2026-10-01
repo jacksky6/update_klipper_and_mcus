@@ -64,9 +64,29 @@ ukam_version() {
 }
 
 function splash() {
+  local -a banner_lines=(
+    '      __  ____ __ ___    __  ___'
+    '     / / / / //_//   |  /  |/  /'
+    '    / / / / ,<  / /| | / /|_/ /'
+    '   / /_/ / /| |/ ___ |/ /  / /'
+    '   \____/_/ |_/_/  |_/_/  /_/'
+  )
+  local -a banner_colors=(
+    "$LIGHT_CYAN" "$GREEN" "$BLUE" "$MAGENTA" "$RED"
+  )
+  local line
+  local index
+
   printf '\n  +'
   printf '%0.s-' {1..76}
-  printf '+\n  |%s' "$WHITE"
+  printf '+\n'
+  for index in "${!banner_lines[@]}"; do
+    line="${banner_lines[$index]}"
+    printf '  |%s' "${banner_colors[$index]}"
+    ui_center "$line" 76
+    printf '%s|\n' "$LIGHT_MAGENTA"
+  done
+  printf '  |%s' "$LIGHT_CYAN"
   ui_center "Klipper固件自动刷写工具" 76
   printf '%s|\n  +' "$LIGHT_MAGENTA"
   printf '%0.s-' {1..76}

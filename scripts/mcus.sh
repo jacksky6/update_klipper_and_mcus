@@ -393,8 +393,10 @@ function show_mcu_update_menu() {
       continue
     fi
 
+    printf '%s' "$CYAN"
     print_mcu_table_row "序号" "MCU" "编译配置" "当前固件版本" "目标固件版本" "状态"
     printf '%0.s─' {1..100}
+    printf '%s' "$DEFAULT"
     echo ""
 
     index=1
@@ -434,7 +436,7 @@ function show_mcu_update_menu() {
     echo "  [R]     刷新版本列表"
     echo "  [Q]     退出"
     ui_rule
-    read -r -p "  请输入选项：" choice
+    read -r -p "${CYAN}  请输入选项：${DEFAULT}" choice
 
     case "${choice,,}" in
     q)
