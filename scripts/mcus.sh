@@ -330,8 +330,8 @@ function show_mcu_update_menu() {
     a)
       update_mcus
       klipperservice start
-      echo "正在刷新 MCU 固件版本..."
-      sleep 2
+      echo "等待 MCU 重启完成，5 秒后刷新固件版本..."
+      sleep 5
       refresh_mcu_versions
       ;;
     '')
@@ -342,8 +342,8 @@ function show_mcu_update_menu() {
         mcu="${mcu_order[$((10#$choice - 1))]}"
         update_mcus "$mcu"
         klipperservice start
-        echo "正在刷新 MCU 固件版本..."
-        sleep 2
+        echo "等待 MCU 重启完成，5 秒后刷新固件版本..."
+        sleep 5
         refresh_mcu_versions
       else
         echo -e "${RED}无效选择，请重新输入。${DEFAULT}"
