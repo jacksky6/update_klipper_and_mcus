@@ -18,6 +18,30 @@ function ui_rule() {
   printf '\n'
 }
 
+function ui_center() {
+  local value="$1"
+  local width="$2"
+  local remaining="$value"
+  local character
+  local display_width=0
+  local left_padding
+  local right_padding
+
+  while [[ -n "$remaining" ]]; do
+    character="${remaining:0:1}"
+    remaining="${remaining:1}"
+    if [[ "$character" == [[:ascii:]] ]]; then
+      ((display_width += 1))
+    else
+      ((display_width += 2))
+    fi
+  done
+
+  left_padding=$(((width - display_width) / 2))
+  right_padding=$((width - display_width - left_padding))
+  printf '%*s%s%*s' "$left_padding" '' "$value" "$right_padding" ''
+}
+
 # Colors helpers
 RED=$'\033[1;31m'
 GREEN=$'\033[1;32m'

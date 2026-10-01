@@ -64,15 +64,13 @@ ukam_version() {
 }
 
 function splash() {
-  echo -e "${LIGHT_MAGENTA}
-  ++${CYAN}      __  ____ __ ___    __  ___  ${LIGHT_MAGENTA}++
-  | ${GREEN}     / / / / //_//   |  /  |/  /  ${LIGHT_MAGENTA} |
-  | ${BLUE}    / / / / ,<  / /| | / /|_/ /   ${LIGHT_MAGENTA} |
-  | ${MAGENTA}   / /_/ / /| |/ ___ |/ /  / /    ${LIGHT_MAGENTA} |
-  | ${RED}   \____/_/ |_/_/  |_/_/  /_/     ${LIGHT_MAGENTA} |          
-  |  ${WHITE}Klipper固件自动刷写工具${LIGHT_MAGENTA}  |
-  ++${LIGHT_MAGENTA}----------------------------++
-  "
+  printf '\n  +'
+  printf '%0.s-' {1..76}
+  printf '+\n  |%s' "$WHITE"
+  ui_center "Klipper固件自动刷写工具" 76
+  printf '%s|\n  +' "$LIGHT_MAGENTA"
+  printf '%0.s-' {1..76}
+  printf '+\n%s' "$DEFAULT"
   ukam_version
 }
 
