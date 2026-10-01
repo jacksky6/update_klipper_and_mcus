@@ -133,19 +133,19 @@ is_system_service: False
 #### `-h`、`--help`：显示用法
 
 ```
-Usage: ukam.sh [<config_file>] [-h]
+用法：ukam.sh [<config_file>] [-h]
 
-UKAM, a Klipper Firmware Updater script. Update Klipper repo and mcu firmwares
+UKAM 是一个 Klipper 固件更新脚本，用于更新 Klipper 仓库和 MCU 固件。
 
-Optional args: <config_file> Specify the config file to use. Default is 'mcus.ini'
-  -c, --checkonly            Check if Klipper is up to date only.
-  -b, --rebase               use rebase instead of fast forward to update Klipper
-  -f, --firmware             Do not merge repo, force to update firmwares
-  -m, --menuconfig           Show menuconfig for all Mcus (default do not show menuconfig)
-  -r, --rollback             Rollback to a previous version
-  -q, --quiet                Quiet mode, proceed all if needed tasks, !SKIP MENUCONFIG!
-  -v, --verbose              For debug purpose, display parsed config
-  -h, --help                 Display this help message and exit
+可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.ini'
+  -c, --checkonly            仅检查 Klipper 是否为最新版本。
+  -b, --rebase               使用 rebase 而非 fast-forward 更新 Klipper。
+  -f, --firmware             不合并仓库更新，强制更新固件。
+  -m, --menuconfig           为所有 MCU 显示 menuconfig（默认不显示）。
+  -r, --rollback             回滚到之前的版本。
+  -q, --quiet                静默模式：自动执行所需操作，跳过 MENUCONFIG！
+  -v, --verbose              用于调试，显示已解析的配置。
+  -h, --help                 显示此帮助信息并退出。
 ```
 
 #### `-c`、`--checkonly`
