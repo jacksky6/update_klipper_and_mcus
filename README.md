@@ -55,8 +55,6 @@ UKAM 是一个用于更新或回滚 Klipper/Kalico 及 MCU（主板、RPi、CAN�
     - [非 Klipper 固件](#非-klipper-固件)
 - [关于备份](#关于备份)
 - [常见问题](#常见问题)
-- [待办事项](#待办事项)
-- [致谢](#致谢)
 
 ## 免责声明
 
@@ -406,15 +404,3 @@ _来源：[Issue #12](https://github.com/fbeauKmi/update_klipper_and_mcus/issues
 
 **问：为什么 UKAM 显示发生错误，但刷写似乎已经完成？**
 答：在 USB 模式下，即使刷写成功，`dfu-util` 也总会返回错误码。目前无法消除这个错误；可以使用其他刷写方式（例如 Katapult）来避免它。
-
-## 待办事项
-
-目前脚本已经可以正常工作。如有建议，欢迎通过本项目的 Issue 提出。
-
-## 致谢
-
-本脚本离不开 [Klipper](https://github.com/Klipper3d/klipper)、[Moonraker](https://github.com/Arksine/moonraker) 和 [Katapult](https://github.com/Arksine/katapult) 的开发。感谢所有贡献者。
-
-感谢 OldGuyMeltPlastic 和 Voron 社区为早期版本提供灵感（[OGMP 视频](https://youtu.be/K-luKltYgpU)及 [Voron 文档](https://docs.vorondesign.com/community/howto/drachenkatze/automating_klipper_mcu_updates.html)）。
-
-感谢法国 Voron 社区的支持与包容。
