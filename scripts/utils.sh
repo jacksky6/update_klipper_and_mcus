@@ -4,7 +4,7 @@ usage() {
   cat <<EOF
 用法：$0 [<config_file>] [-h]
 
-UKAM：Klipper MCU 固件更新脚本。
+Klipper固件自动刷写工具：用于更新 Klipper MCU 固件。
 
 可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.cfg'
   -m, --menuconfig  为所有 MCU 显示 menuconfig（默认不显示）。

@@ -51,8 +51,8 @@ function splash() {
   | ${BLUE}    / / / / ,<  / /| | / /|_/ /   ${LIGHT_MAGENTA} |
   | ${MAGENTA}   / /_/ / /| |/ ___ |/ /  / /    ${LIGHT_MAGENTA} |
   | ${RED}   \____/_/ |_/_/  |_/_/  /_/     ${LIGHT_MAGENTA} |          
-  |       — 更新 MCU 固件 —       |
-  ++${WHITE}        v0.0.9 中文维护版        ${LIGHT_MAGENTA}++
+  |  ${WHITE}Klipper固件自动刷写工具${LIGHT_MAGENTA}  |
+  ++${WHITE}          中文维护版          ${LIGHT_MAGENTA}++
   "
   ukam_version
 }
@@ -64,12 +64,12 @@ function main() {
     ui_rule
     echo -e "${CYAN}  首次运行初始化${DEFAULT}"
     ui_rule
-    echo "  检测到这是首次运行，本机尚未安装 UKAM 配置。"
+    echo "  检测到这是首次运行，本机尚未初始化本工具。"
     echo "  将创建配置目录并安装示例配置文件："
     echo "  $ukam_config/mcus.cfg"
     echo ""
 
-    if ! prompt "是否现在初始化 UKAM？"; then
+    if ! prompt "是否现在初始化？"; then
       echo -e "${YELLOW}  已取消初始化，未修改任何文件。${DEFAULT}"
       return 0
     fi
@@ -109,7 +109,7 @@ function main() {
 }
 
 if [ "$EUID" -eq 0 ]; then
-  echo -e "${RED}请不要以 root 用户运行 UKAM！" >&2
+  echo -e "${RED}请不要以 root 用户运行本工具！" >&2
   exit 1
 fi
 

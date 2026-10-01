@@ -266,7 +266,7 @@ function show_mcu_update_menu() {
   while true; do
     clear 2>/dev/null
     ui_rule
-    echo -e "${CYAN}  UKAM MCU 固件管理${DEFAULT}"
+    echo -e "${CYAN}  Klipper固件自动刷写工具${DEFAULT}"
     echo "  本机 Klipper/Kalico 版本：${k_local_version}"
     ui_rule
     echo ""
