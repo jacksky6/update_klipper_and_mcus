@@ -291,6 +291,67 @@ function print_mcu_table_row() {
   printf ' %s\n' "$5"
 }
 
+function configure_mcu() {
+  local mcu="$1"
+  local target
+  local config_path
+  local config_file_str
+
+  set_is_klipper_fw "$mcu"
+  if ! ${is_klipper_fw["$mcu"]}; then
+    echo -e "${YELLOW}  $mcu 是外部固件，不使用 Klipper 的 menuconfig。${DEFAULT}"
+    read -r -p "  按回车键返回列表..."
+    return 0
+  fi
+
+  target=$(echo "${config_name["$mcu"]}" | tr ' ' '_')
+  config_path="$ukam_config/config/config.$target"
+  config_file_str="KCONFIG_CONFIG=$config_path"
+
+  echo ""
+  ui_rule
+  echo -e "${CYAN}  配置 $mcu 的固件编译选项${DEFAULT}"
+  echo "  配置文件：$config_path"
+  echo "  退出 menuconfig 后会保存选项，不会构建或刷写固件。"
+  ui_rule
+  echo ""
+
+  if ! (cd ~/klipper && make menuconfig "$config_file_str"); then
+    echo -e "${RED}  无法打开 menuconfig。${DEFAULT}"
+    return 0
+  fi
+
+  if [[ "${config_name["$mcu"]}" != "$mcu" ]] && \
+    grep -q -E "# CONFIG_USB_SERIAL_NUMBER_CHIPID|# CONFIG_CAN_UUID_USE_CHIPID" "$config_path"; then
+    echo -e "${YELLOW}  注意：此配置由多个 MCU 共用，不能启用伪造 USB 序列号或 CAN UUID。${DEFAULT}"
+  fi
+
+  echo -e "${GREEN}  编译选项已保存。${DEFAULT}"
+  read -r -p "  按回车键返回列表..."
+}
+
+function configure_mcu_from_menu() {
+  local choice
+  local mcu
+
+  while true; do
+    echo ""
+    read -r -p "  请输入要配置的 MCU 序号（Q 取消）：" choice
+    case "${choice,,}" in
+    q | '') return 0 ;;
+    esac
+
+    if [[ "$choice" =~ ^[0-9]+$ ]] && \
+      ((10#$choice >= 1 && 10#$choice <= ${#mcu_order[@]})); then
+      mcu="${mcu_order[$((10#$choice - 1))]}"
+      configure_mcu "$mcu"
+      return 0
+    fi
+
+    echo -e "${RED}  无效序号，请重新输入。${DEFAULT}"
+  done
+}
+
 function show_mcu_update_menu() {
   local choice
   local index
@@ -349,6 +410,7 @@ function show_mcu_update_menu() {
     echo -e "${CYAN}  操作${DEFAULT}"
     echo "  [序号]  更新指定 MCU"
     echo "  [A]     更新全部需要更新的 MCU"
+    echo "  [M]     配置 MCU 编译选项"
     echo "  [R]     刷新版本列表"
     echo "  [Q]     退出"
     ui_rule
@@ -367,6 +429,9 @@ function show_mcu_update_menu() {
       echo "等待 MCU 重启完成，5 秒后刷新固件版本..."
       sleep 5
       refresh_mcu_versions
+      ;;
+    m)
+      configure_mcu_from_menu
       ;;
     '')
       ;;
