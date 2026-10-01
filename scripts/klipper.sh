@@ -5,26 +5,13 @@
 klipperstate=$(systemctl is-active klipper >/dev/null 2>&1 && echo true ||
   echo false)
 
-#init usefull informations
-k_branch=""
-k_fullbranch=""
-k_remote_version=""
+# Initialize local Klipper version information used for MCU firmware matching.
 k_local_version=""
-k_repo=""
-k_tag=""
 
-#Load klipper repo informations
+# Load the local Klipper version. UKAM never modifies the Klipper repository.
 function get_klipper_vars() {
-  k_branch=$(git -C ~/klipper rev-parse --abbrev-ref HEAD)
-  k_fullbranch=$(git -C ~/klipper rev-parse --abbrev-ref \
-    --symbolic-full-name @{u})
-  k_remote_version=$(git -C ~/klipper fetch -q &&
-    git -C ~/klipper describe "origin/$k_branch" --tags --always --long)
   k_local_version=$(git -C ~/klipper describe --tags --always --long --dirty)
-  k_repo=$(git -C ~/klipper remote get-url origin)
-  k_tag=$(git -C ~/klipper describe --abbrev=0 --tags)
 }
-
 # Check if Klipper venv exists
 function find_klipper_venv() {
   if get_venv; then
@@ -58,70 +45,4 @@ Do you want to restart ${APP} anyway ?" n; then
   echo -e "${YELLOW}${1^}$str Klipper service${DEFAULT}"
   sudo systemctl $1 klipper
   return 0
-}
-
-function update_klipper() {
-  local ERR_PULL=false
-  local local_behind=$(git -C ~/klipper rev-list HEAD..@{u} --count)
-  local local_ahead=$(git -C ~/klipper rev-list @{u}..HEAD --count)
-
-  # Display version & commits
-  echo -e "Origin: ${BLUE}$k_repo $k_fullbranch${DEFAULT}"
-  echo "Local version $k_local_version"
-  echo "Latest version $k_remote_version"
-  echo "${local_behind} commit(s) behind repo"
-  [ $local_ahead -ne 0 ] && \
-    echo -e "${RED}Local repo has diverged with ${local_ahead} commit(s)" \
-    " ahead${DEFAULT}"
-
-  if [ $local_behind -eq 0 ]; then
-    echo -e "${GREEN}${APP} is up to date${DEFAULT}"
-  else
-    # Fail if repo is dirty
-    if [[ "$k_local_version" == *"dirty"* ]]; then
-      echo -e "${RED}${APP} repo is dirty, try to solve this before " \
-        "update${DEFAULT}"
-      echo "Conflict(s) to solve : "
-      git -C ~/klipper status --short
-      ERR_PULL=true
-    else
-      
-      # Pull repo
-      if [[ "$CHECK" == false ]]; then
-        echo "Updating ${APP} from $k_repo $k_fullbranch"
-        # Disable error trap to handle git pull error
-        set +E
-        trap - ERR
-        
-        git_output=$(git -C ~/klipper pull $git_option 2>&1) # Capture stdout
-        exit_status=$?
-
-        # re-enable error trap
-        set -E
-        trap 'handle_error $?' ERR
-
-        # prompt to rebase if git pull fails
-        if [ $exit_status -ne 0 ] || echo "$git_output" | grep -q "error"; then
-          echo -e "${RED}Git pull failed:${DEFAULT} $git_output"
-          [ $local_ahead -ne 0 ] && [[ "$git_option" != "--rebase" ]] && 
-            prompt "Do you want to rebase to update ${APP} ?" n &&
-            git_output=$(git -C ~/klipper pull --rebase 2>&1)
-          exit_status=$?
-          ERROR=false
-        fi
-
-        if [ $exit_status -eq 0 ]; then
-          store_rollback_version
-          k_local_version=$(git -C ~/klipper describe --tags --always --long)
-        else
-          ERR_PULL=true
-        fi
-      fi
-    fi
-  fi
-  if [[ "$ERR_PULL" == true ]] && \
-    ! prompt "Do you want to flash firmware on mcus anyway ?" n; then
-    TOUPDATE=false
-    ERROR=true
-  fi
 }

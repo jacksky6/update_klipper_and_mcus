@@ -11,9 +11,9 @@
 ![UKAM_Banner](./images/banner.png)
 # **UKAM[^1] v0.0.9**（无限空闲）
 
-[^1]: 一次性更新 Klipper 与全部 MCU，同样支持 Kalico。
+[^1]: 使用本机 Klipper 或 Kalico 源码，一次性更新全部 MCU 固件。
 
-UKAM 是一个用于更新或回滚 Klipper/Kalico 及 MCU（主板、RPi、CAN、Pico 等）的 Bash 脚本，并会**保留配置文件，供下次更新使用**。
+UKAM 是一个用于批量更新 MCU 固件（主板、RPi、CAN、Pico 等）的 Bash 脚本，并会**保留配置文件，供下次更新使用**。它不会更新或回滚 Klipper/Kalico 主机端代码。
 
 > [!WARNING]
 > ### 使用须知
@@ -29,12 +29,6 @@ UKAM 是一个用于更新或回滚 Klipper/Kalico 及 MCU（主板、RPi、CAN�
 > ### 为什么还需要 UKAM？
 > 当 Klipper 要求更新 MCU 时，它能让这个过程更轻松。
 
-> [!NOTE]
-> 当前版本标签为 `0.0.9`。
->
-> 新特性：
-> - 改进回滚功能
-
 ## 目录
 
 - [UKAM 的功能](#ukam-的功能)
@@ -42,7 +36,7 @@ UKAM 是一个用于更新或回滚 Klipper/Kalico 及 MCU（主板、RPi、CAN�
 - [通过 Moonraker 更新 UKAM](#通过-moonraker-更新-ukam)
 - [使用方法](#使用方法)
   - [选项](#选项)
-  - [回滚](#回滚)
+- [主机端更新](#主机端更新)
 - [编辑 mcus.ini](#编辑-mcusini)
   - [mcus.ini 示例](#mcusini-示例)
     - [RPi 微控制器](#rpi-微控制器)
@@ -76,14 +70,13 @@ UKAM 是一个用于更新或回滚 Klipper/Kalico 及 MCU（主板、RPi、CAN�
 
 ## UKAM 的功能
 
-更新 Klipper，并为每个 MCU 刷写固件。
+根据本机当前的 Klipper/Kalico 源码，为每个已配置的 MCU 构建并刷写固件。UKAM 不会修改 Klipper/Kalico 仓库。
 
 ![流程图](./images/flowchart.png)
 
 基本执行流程：
 
 ```
-git pull
 service klipper stop
 make clean
 make menuconfig
@@ -93,7 +86,7 @@ service klipper start
 ```
 
 > [!IMPORTANT]
-> 如果更新后出现问题，UKAM 也可以回滚 Klipper 版本。
+> 使用 UKAM 前，请先通过 KIAUH 或其他方式将 Klipper/Kalico 更新到要使用的版本。
 
 ## 安装
 
@@ -102,12 +95,14 @@ cd ~
 git clone https://github.com/jacksky6/update_klipper_and_mcus.git ukam
 ```
 
-运行以下命令创建所需目录：
+首次运行以下命令会创建所需目录，并复制示例 `mcus.ini`：
 
 ```
 cd ukam
-./ukam.sh -c
+./ukam.sh
 ```
+
+首次运行不会更新 Klipper；请编辑 `~/printer_data/config/ukam/mcus.ini` 后再运行 UKAM 进行 MCU 更新。
 
 ## 通过 Moonraker 更新 UKAM
 
@@ -133,33 +128,19 @@ is_system_service: False
 ```
 用法：ukam.sh [<config_file>] [-h]
 
-UKAM 是一个 Klipper 固件更新脚本，用于更新 Klipper 仓库和 MCU 固件。
+UKAM 是一个 Klipper MCU 固件更新脚本。
 
 可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.ini'
-  -c, --checkonly            仅检查 Klipper 是否为最新版本。
-  -b, --rebase               使用 rebase 而非 fast-forward 更新 Klipper。
-  -f, --firmware             不合并仓库更新，强制更新固件。
+  -f, --firmware             即使固件版本一致，也强制更新 MCU 固件。
   -m, --menuconfig           为所有 MCU 显示 menuconfig（默认不显示）。
-  -r, --rollback             回滚到之前的版本。
   -q, --quiet                静默模式：自动执行所需操作，跳过 MENUCONFIG！
   -v, --verbose              用于调试，显示已解析的配置。
   -h, --help                 显示此帮助信息并退出。
 ```
 
-#### `-c`、`--checkonly`
-
-仅检查 Klipper 是否为最新版本；如果不是，会显示最新提交。
-
 #### `-f`、`--firmware`：强制更新 MCU
 
-跳过 Klipper 仓库更新；若 Klipper 已是最新版本，则强制更新 MCU。
-
-#### `-r`、`--rollback`
-
-回滚到此脚本保存的上一版本。若仓库存在未提交改动，脚本会执行硬重置；未跟踪文件将被删除，插件需要重新安装。
-
-> [!TIP]
-> 新功能：如果保存的版本不合适，现在可以回滚到任意提交。
+即使 MCU 固件版本与本机 Klipper/Kalico 版本一致，也强制构建并刷写固件。
 
 #### `-m`、`--menuconfig`
 
@@ -170,27 +151,11 @@ UKAM 是一个 Klipper 固件更新脚本，用于更新 Klipper 仓库和 MCU �
 静默模式会跳过所有交互，直接完成已配置的更新。但请注意：
 
 - 首次必须至少以交互模式运行一次。
-- Klipper 更新可能新增、删除或修改 `menuconfig` 选项，而已有配置文件不会自动更新，进而可能导致构建失败。
+- Klipper/Kalico 更新可能新增、删除或修改 `menuconfig` 选项，而已有配置文件不会自动更新，进而可能导致构建失败。
 
-### 回滚
+## 主机端更新
 
-如果最新版本导致问题，也可以用 UKAM 切换 Klipper 或 Kalico 版本。
-
-> [!TIP]
-> 使用回滚功能不需要完整配置 UKAM。
-
-在终端运行 `~/<脚本目录>/rollback.sh` 或 `~/<脚本目录>/ukam.sh --rollback`，然后按提示操作。
-
-可以根据需要使用以下三种方式回滚 Klipper：
-
-- **按提交数量：** 指定从当前版本向前回退多少个提交。若知道目标版本之后更新了多少次，请使用此方式。
-  _例如：当前版本为 v0.13.0-272，要回到 v0.13.190 时选择 **92**。_
-
-- **按版本标签：** 选择特定版本标签。适用于回到官方发布版或已知稳定版本。
-  _例如：当前版本为 v0.13.0-272，要回到 v0.13.190 时选择 **190**。_
-
-- **按日期（指定日期前的最后一次提交）：** 回滚到给定日期之前的最后一次提交。适用于排查问题或恢复到某一日期的状态。
-  _例如：当前版本为 v0.13.0-272，选择 **2025-08-04**（格式为 YYYY-MM-DD）即可回到 v0.13.190。_
+UKAM 不管理 Klipper、Moonraker、Mainsail 或 Fluidd 的安装、更新和回滚。建议使用 [KIAUH](https://github.com/dw-0/kiauh) 统一管理这些主机端组件；完成 Klipper/Kalico 更新后，再运行 UKAM 更新需要匹配版本的 MCU 固件。
 
 ## 编辑 mcus.ini
 

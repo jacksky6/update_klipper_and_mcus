@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# UKAM is a bash script to simplify klipper firmware updates.
+# UKAM is a bash script to simplify Klipper MCU firmware updates.
 #
 # Copyright (C) 2024-2025 fboc (Frédéric Beaucamp)
 #
@@ -28,7 +28,6 @@ ukam_config="${HOME}/printer_data/config/ukam"
 source "$ukam_path/scripts/utils.sh"
 source "$ukam_path/scripts/mcus.sh"
 source "$ukam_path/scripts/klipper.sh"
-source "$ukam_path/scripts/rollback.sh"
 source "$ukam_path/scripts/moonraker.sh"
 
 # Display versions
@@ -52,7 +51,7 @@ function splash() {
   | ${BLUE}    / / / / ,<  / /| | / /|_/ /   ${LIGHT_MAGENTA} |
   | ${MAGENTA}   / /_/ / /| |/ ___ |/ /  / /    ${LIGHT_MAGENTA} |
   | ${RED}   \____/_/ |_/_/  |_/_/  /_/     ${LIGHT_MAGENTA} |          
-  |  — Update — Klipper — & — Mcus ——  |
+  |       — Update — Mcus —       |
   ++${WHITE}       v0.0.9 Infinite Idle       ${LIGHT_MAGENTA}++
   "
   ukam_version
@@ -66,24 +65,9 @@ function main() {
   get_mcus_version
   show_config
 
-  # Check for updates from the Git repo and prompt the user to update the MCUs
-  if ! $FIRMWAREONLY; then
-    :
-    if $ROLLBACK; then
-      echo -e "\n${BLUE}-- Rollback ${APP} updates --${DEFAULT}"
-      show_rollback
-      do_rollback
-    else
-      echo -e "\n${BLUE}-- Check and apply ${APP} updates --${DEFAULT}"
-      update_klipper
-    fi
-  fi
-
-  if $TOUPDATE; then
-    echo -e "\n${BLUE}-- Update Mcus --${DEFAULT}"
-    update_mcus          # call the update_mcus function
-    klipperservice start # start the Klipper service
-  fi
+  echo -e "\n${BLUE}-- Update Mcus --${DEFAULT}"
+  update_mcus          # call the update_mcus function
+  klipperservice start # start the Klipper service
 
   if $ERROR; then
     echo -e "\n    ${RED}Unfortunately something went wrong ! :("
@@ -103,30 +87,20 @@ if [ "$EUID" -eq 0 ]; then
   exit 1
 fi
 
-CHECK=false
 FIRMWAREONLY=false
 HELP=false
 MENUCONFIG=false
 QUIET=false
-ROLLBACK=false
-TOUPDATE=true
 VERBOSE=false
-git_option="--ff-only"
 APP=unknown
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  -c | --checkonly)
-    CHECK=true
-    TOUPDATE=false
-    ;;
-  -b | --rebase) git_option="--rebase";;
   -f | --firmware) FIRMWAREONLY=true ;;
   -h | --help) HELP=true ;;
   -m | --menuconfig) MENUCONFIG=true ;;
   -q | --quiet) QUIET=true ;;
-  -r | --rollback) ROLLBACK=true ;;
   -v | --verbose) VERBOSE=true ;;
   -* | --*) HELP=true ;;
   *)

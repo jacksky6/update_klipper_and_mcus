@@ -2,16 +2,13 @@
 
 usage() {
   cat <<EOF
-用法：$0 [<mcus.ini>] [-h]
+用法：$0 [<config_file>] [-h]
 
-UKAM：Klipper 固件更新脚本，用于更新 Klipper 仓库和 MCU 固件。
+UKAM：Klipper MCU 固件更新脚本。
 
 可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.ini'
-  -c, --checkonly   仅检查 Klipper 是否为最新版本。
-  -b, --rebase      使用 rebase 而非 fast-forward 更新 Klipper。
-  -f, --firmware    不合并仓库更新，强制更新固件。
+  -f, --firmware    即使固件版本一致，也强制更新 MCU 固件。
   -m, --menuconfig  为所有 MCU 显示 menuconfig（默认不显示）。
-  -r, --rollback    回滚到之前的版本。
   -q, --quiet       静默模式：自动执行所需操作，跳过 MENUCONFIG！
   -v, --verbose     用于调试，显示已解析的配置。
   -h, --help        显示此帮助信息并退出。

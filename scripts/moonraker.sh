@@ -64,7 +64,7 @@ function get_mcus_version() {
     return 0
   fi  
   parse_json state klipper_state "error"
-  if [[ ! $CHECK && $klipper_state =~ ^(printing|paused)$ ]]; then
+  if [[ $klipper_state =~ ^(printing|paused)$ ]]; then
     error_exit "Printer is not ready (${klipper_state}) ! YOU MUST NOT" \
     "UPDATE MCUS PRINTING !"
     return 0
