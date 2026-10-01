@@ -267,7 +267,7 @@ function show_mcu_update_menu() {
     clear 2>/dev/null
     ui_rule
     echo -e "${CYAN}  Klipper固件自动刷写工具${DEFAULT}"
-    echo "  本机 Klipper/Kalico 版本：${k_local_version}"
+    echo "  本地 ${k_local_name} 版本：${k_local_version}"
     ui_rule
     echo ""
 
