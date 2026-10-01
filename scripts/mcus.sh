@@ -283,12 +283,28 @@ function print_mcu_table_cell() {
 function print_mcu_table_row() {
   print_mcu_table_cell "$1" 5
   printf ' '
-  print_mcu_table_cell "$2" 20
+  print_mcu_table_cell "$2" 18
   printf ' '
-  print_mcu_table_cell "$3" 26
+  print_mcu_table_cell "$3" 10
   printf ' '
   print_mcu_table_cell "$4" 26
-  printf ' %s\n' "$5"
+  print_mcu_table_cell "$5" 26
+  printf ' %s\n' "$6"
+}
+
+function get_mcu_build_config_status() {
+  local mcu="$1"
+  local target
+  local config_path
+
+  if ! ${is_klipper_fw["$mcu"]}; then
+    echo "不需要"
+    return 0
+  fi
+
+  target=$(echo "${config_name["$mcu"]}" | tr ' ' '_')
+  config_path="$ukam_config/config/config.$target"
+  [[ -f "$config_path" ]] && echo "已配置" || echo "未配置"
 }
 
 function configure_mcu() {
@@ -358,6 +374,7 @@ function show_mcu_update_menu() {
   local mcu
   local current_version
   local target_version
+  local build_config_status
   local status
 
   while true; do
@@ -376,7 +393,7 @@ function show_mcu_update_menu() {
       continue
     fi
 
-    print_mcu_table_row "序号" "MCU" "当前固件版本" "目标固件版本" "状态"
+    print_mcu_table_row "序号" "MCU" "编译配置" "当前固件版本" "目标固件版本" "状态"
     printf '%0.s─' {1..100}
     echo ""
 
@@ -385,6 +402,7 @@ function show_mcu_update_menu() {
       set_is_klipper_fw "$mcu"
       current_version="${mcu_version[$mcu]}"
       target_version="-"
+      build_config_status=$(get_mcu_build_config_status "$mcu")
       status="外部固件"
 
       if ${is_klipper_fw["$mcu"]}; then
@@ -401,7 +419,7 @@ function show_mcu_update_menu() {
         current_version="未读取"
       fi
 
-      print_mcu_table_row "$index" "$mcu" "$current_version" "$target_version" "$status"
+      print_mcu_table_row "$index" "$mcu" "$build_config_status" "$current_version" "$target_version" "$status"
       ((index++))
     done
 
