@@ -409,11 +409,13 @@ function show_mcu_update_menu() {
         target_version="$k_local_version"
         if [[ "$current_version" == "unknown" ]]; then
           current_version="未读取"
-          status="无法判断"
+          status="未读取"
         elif [[ "$current_version" == "$k_local_version" ]]; then
-          status="已匹配"
+          status="已是最新"
+        elif printf '%s\n' "$current_version" "$k_local_version" | sort -V -C; then
+          status="可升级"
         else
-          status="需要更新"
+          status="将降级"
         fi
       elif [[ "$current_version" == "unknown" ]]; then
         current_version="未读取"
