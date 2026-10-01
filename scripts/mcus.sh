@@ -255,6 +255,42 @@ function refresh_mcu_versions() {
   get_mcus_version
 }
 
+# Bash printf uses UTF-8 byte length, while Chinese characters occupy two
+# terminal columns. Pad cells by their terminal display width instead.
+function print_mcu_table_cell() {
+  local value="$1"
+  local column_width="$2"
+  local remaining="$value"
+  local character
+  local display_width=0
+
+  while [[ -n "$remaining" ]]; do
+    character="${remaining:0:1}"
+    remaining="${remaining:1}"
+    if [[ "$character" == [[:ascii:]] ]]; then
+      ((display_width += 1))
+    else
+      ((display_width += 2))
+    fi
+  done
+
+  printf '%s' "$value"
+  if ((column_width > display_width)); then
+    printf '%*s' "$((column_width - display_width))" ''
+  fi
+}
+
+function print_mcu_table_row() {
+  print_mcu_table_cell "$1" 5
+  printf ' '
+  print_mcu_table_cell "$2" 20
+  printf ' '
+  print_mcu_table_cell "$3" 26
+  printf ' '
+  print_mcu_table_cell "$4" 26
+  printf ' %s\n' "$5"
+}
+
 function show_mcu_update_menu() {
   local choice
   local index
@@ -279,8 +315,7 @@ function show_mcu_update_menu() {
       continue
     fi
 
-    printf '%-5s %-20s %-26s %-26s %s\n' \
-      "序号" "MCU" "当前固件版本" "目标固件版本" "状态"
+    print_mcu_table_row "序号" "MCU" "当前固件版本" "目标固件版本" "状态"
     printf '%0.s─' {1..100}
     echo ""
 
@@ -305,8 +340,7 @@ function show_mcu_update_menu() {
         current_version="未读取"
       fi
 
-      printf '%-5s %-20s %-26s %-26s %s\n' \
-        "$index" "$mcu" "$current_version" "$target_version" "$status"
+      print_mcu_table_row "$index" "$mcu" "$current_version" "$target_version" "$status"
       ((index++))
     done
 

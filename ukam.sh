@@ -23,6 +23,7 @@ trap 'handle_error $LINENO' ERR
 ukam_path=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # Config_path
 ukam_config="${HOME}/printer_data/config/ukam"
+original_args=("$@")
 
 #Load functions
 source "$ukam_path/scripts/utils.sh"
@@ -32,15 +33,33 @@ source "$ukam_path/scripts/moonraker.sh"
 
 # Display versions
 ukam_version() {
-  git -C $ukam_path fetch -q
-  git -C $ukam_path fetch --tags --force -q
-  s_version=$(git -C $ukam_path describe --always --tags --long --dirty \
+  local branch
+  local s_version
+  local s_remote
+
+  if ! git -C "$ukam_path" fetch --tags --force -q; then
+    echo -e "${YELLOW}  无法检查工具更新，将继续使用当前版本。${DEFAULT}"
+    return 0
+  fi
+
+  branch=$(git -C "$ukam_path" branch --show-current)
+  s_version=$(git -C "$ukam_path" describe --always --tags --long --dirty \
     2>/dev/null)
-  s_remote=$(git -C $ukam_path describe "origin/$(git -C $ukam_path rev-parse \
-    --abbrev-ref HEAD)" --always --tags --long 2>/dev/null)
+  s_remote=$(git -C "$ukam_path" describe "origin/$branch" --always --tags --long \
+    2>/dev/null)
   [[ ! $s_version = "" ]] && echo -e "  当前版本：$s_version"
-  [[ ! $s_version = "$s_remote"* ]] &&
-    echo -e "  有可用新版本：$s_remote"
+
+  if [[ -n "$branch" && -n "$s_remote" && ! $s_version = "$s_remote"* ]]; then
+    echo -e "${YELLOW}  检测到工具新版本：$s_remote${DEFAULT}"
+    if prompt "是否立即更新 Klipper固件自动刷写工具？" n; then
+      echo "  正在更新工具..."
+      if git -C "$ukam_path" pull --ff-only; then
+        echo -e "${GREEN}  更新完成，正在重新启动...${DEFAULT}"
+        exec "$ukam_path/ukam.sh" "${original_args[@]}"
+      fi
+      echo -e "${RED}  更新失败：请处理本地 Git 改动后重试。${DEFAULT}"
+    fi
+  fi
   return 0
 }
 
@@ -52,7 +71,7 @@ function splash() {
   | ${MAGENTA}   / /_/ / /| |/ ___ |/ /  / /    ${LIGHT_MAGENTA} |
   | ${RED}   \____/_/ |_/_/  |_/_/  /_/     ${LIGHT_MAGENTA} |          
   |  ${WHITE}Klipper固件自动刷写工具${LIGHT_MAGENTA}  |
-  ++${WHITE}          中文维护版          ${LIGHT_MAGENTA}++
+  ++${LIGHT_MAGENTA}----------------------------++
   "
   ukam_version
 }
