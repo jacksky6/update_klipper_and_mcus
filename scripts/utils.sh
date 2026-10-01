@@ -7,12 +7,15 @@ usage() {
 UKAM：Klipper MCU 固件更新脚本。
 
 可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.ini'
-  -f, --firmware    即使固件版本一致，也强制更新 MCU 固件。
   -m, --menuconfig  为所有 MCU 显示 menuconfig（默认不显示）。
-  -q, --quiet       静默模式：自动执行所需操作，跳过 MENUCONFIG！
   -v, --verbose     用于调试，显示已解析的配置。
   -h, --help        显示此帮助信息并退出。
 EOF
+}
+
+function ui_rule() {
+  printf '%0.s━' {1..76}
+  printf '\n'
 }
 
 # Colors helpers
@@ -34,8 +37,6 @@ prompt() {
   local default="Yn"
   [ $# -eq 2 ] && [ ${2^} = "N" ] && default="yN"
 
-  # In quiet mode skip prompt and return default value
-  $QUIET && { [ $default = "yN" ] && return 1 || return 0; }  
   while true; do
     read -p "${MAGENTA}$1 [$default]: ${DEFAULT}" yn
     case $yn in
@@ -55,15 +56,14 @@ prompt() {
 
 # Error function Exit script
 function error_exit() {
-  echo -e "${RED}!!Error: $*${DEFAULT}" >&2
+  echo -e "${RED}!!错误：$*${DEFAULT}" >&2
   exit 1
 }
 
 # Handle unexpected error() {
 function handle_error() {
   ERROR=true
-  echo -e "${RED}!!Error: Unexpected error $*${DEFAULT}" >&2
-  $QUIET && exit 1  # Exit on any error if in quiet mode
+  echo -e "${RED}!!错误：发生意外错误 $*${DEFAULT}" >&2
 }
 # Function to enter bootloader mode
 # Usage  : enter_bootloader -t [type:usb|serial|can] -d [serial]
@@ -84,9 +84,9 @@ function enter_bootloader() {
     t) type=$(echo "$OPTARG" | tr '[:upper:]' '[:lower:]') ;;
     d) serial="$OPTARG" ;;
     b) baudrate="$OPTARG" ;;
-    \?) error_exit "Invalid option -$OPTARG. Usage: enter_bootloader -t" \
+    \?) error_exit "无效选项 -$OPTARG。用法：enter_bootloader -t" \
       "<usb|serial|can> -d <serial> [-b baudrate] | -u <canbus_uuid>" ;;
-    :) error_exit "Option -$OPTARG requires an argument. Usage:" \
+    :) error_exit "选项 -$OPTARG 需要参数。用法：" \
       "enter_bootloader -t <usb|serial> -d <serial> [-b baudrate] |" \
       "-u <canbus_uuid>" ;;
     esac
@@ -94,12 +94,12 @@ function enter_bootloader() {
 
   # Check if required arguments are provided
   if [[ -z "$type" ]]; then
-    error_exit "Type argument is missing. Usage: enter_bootloader" \
+    error_exit "缺少类型参数。用法：enter_bootloader" \
       "-t <usb|serial> -d <serial> [-b baudrate]"
   fi
 
   if [[ -z "$serial" ]]; then
-    error_exit "Serial argument is missing. Usage: enter_bootloader" \
+    error_exit "缺少串口参数。用法：enter_bootloader" \
       "-t <usb|serial> -d <serial> [-b baudrate] | -u <canbus_uuid>"
   fi
 
@@ -112,7 +112,7 @@ function enter_bootloader() {
     sleep 2
     ;;
   serial)
-    echo "Entering serial bootloader mode for $serial"
+    echo "正在让 $serial 进入串口引导加载程序模式"
     baudrate=${baudrate:-250000}
     $venv -c "
 import sys, serial
@@ -126,39 +126,42 @@ except serial.SerialException as e:
     sleep 2
     ;;
   can)
-    echo "Entering CAN bootloader mode for $serial"
+    echo "正在让 $serial 进入 CAN 引导加载程序模式"
     if [[ -f ~/katapult/scripts/flashtool.py ]]; then
       ~/katapult/scripts/flashtool.py -r -u $serial
       sleep 2
     else
-      error_exit "flashtool.py not found"
+      error_exit "未找到 flashtool.py"
     fi
     ;;
   *)
-    error_exit "Unknown bootloader type: $type"
+    error_exit "未知的引导加载程序类型：$type"
     ;;
   esac
 }
 
 function link_config() {
-  if [ ! -d $ukam_config ]; then
-    mkdir $ukam_config
-    echo -e "\n${DEFAULT}Create folder ${ukam_config}"
-    #link existing folder (compatibity with previous version)
-    if [ -d $ukam_path/config ]; then
-      ln -s $ukam_path/config $ukam_config/config
-    fi
-    if [ -e $ukam_path/mcus.ini ]; then
-      echo -e "${DEFAULT}Moving mcus.ini to ${ukam_config}\n"
-      mv $ukam_path/mcus.ini $ukam_config
+  if [ ! -d "$ukam_config" ]; then
+    mkdir -p "$ukam_config"
+    echo -e "${GREEN}  已创建配置目录：${DEFAULT}$ukam_config"
+  fi
+
+  if [ ! -f "$ukam_config/mcus.ini" ]; then
+    if [ -f "$ukam_path/mcus.ini" ]; then
+      mv "$ukam_path/mcus.ini" "$ukam_config/mcus.ini"
+      echo -e "${GREEN}  已迁移现有 mcus.ini 配置。${DEFAULT}"
     else
-      echo -e "${DEFAULT}Copying sample mcus.ini to ${ukam_config}\n"
-      cp $ukam_path/examples/mcus.ini $ukam_config
+      cp "$ukam_path/examples/mcus.ini" "$ukam_config/mcus.ini"
+      echo -e "${GREEN}  已复制示例 mcus.ini 配置。${DEFAULT}"
     fi
   fi
+
   if [ ! -d "$ukam_config/config" ]; then
-      # If it doesn't exist, create it
+    if [ -d "$ukam_path/config" ]; then
+      ln -s "$ukam_path/config" "$ukam_config/config"
+    else
       mkdir -p "$ukam_config/config"
-      echo -e "${DEFAULT}Create folder $ukam_config/config\n"
+    fi
+    echo -e "${GREEN}  已创建固件配置目录。${DEFAULT}"
   fi
 }

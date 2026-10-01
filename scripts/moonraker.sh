@@ -42,8 +42,7 @@ function get_venv() {
 function get_mcus_version() {
   # Check if printer info is available
   if ! moonraker_query printer/info json; then
-    echo -e "${RED}Failed to query Moonraker. Unable to collect" \
-    "infos on mcus${DEFAULT}"
+    echo -e "${RED}无法访问 Moonraker，无法读取 MCU 固件信息。${DEFAULT}"
     return 0
   fi
   
@@ -52,29 +51,25 @@ function get_mcus_version() {
   parse_json state printer_state "error"
   # Abort if printer is startup or error
   if [[ $printer_state =~ ^(startup)$ ]]; then
-    echo -e "${RED}Klippy state: ${printer_state}.${DEFAULT} Unable to" \
-    "collect mcus firmware version"
+    echo -e "${RED}Klippy 状态：${printer_state}。无法读取 MCU 固件版本。${DEFAULT}"
     return 0
   fi
 
   # Check printer state
   if ! moonraker_query printer/objects/query?print_stats json; then
-    echo -e "${RED}Klippy state: ${printer_state}.${DEFAULT} Unable to" \
-    "collect mcus firmware version"
+    echo -e "${RED}Klippy 状态：${printer_state}。无法读取 MCU 固件版本。${DEFAULT}"
     return 0
   fi  
   parse_json state klipper_state "error"
   if [[ $klipper_state =~ ^(printing|paused)$ ]]; then
-    error_exit "Printer is not ready (${klipper_state}) ! YOU MUST NOT" \
-    "UPDATE MCUS PRINTING !"
+    error_exit "打印机当前为 ${klipper_state} 状态，禁止更新 MCU 固件！"
     return 0
   fi
 
   # Get MCU list and versions
   moonraker_query printer/objects/list json
   if ! list_mcus mcus; then
-    echo -e "${RED}Klippy state: ${printer_state}.${DEFAULT} Unable" \
-    "to list mcus"
+    echo -e "${RED}Klippy 状态：${printer_state}。无法获取 MCU 列表。${DEFAULT}"
     return 0
   fi
     
@@ -83,8 +78,7 @@ function get_mcus_version() {
     parse_json mcu_version tmp "unknown"
     parse_json app app "unknown"
     if [[ $tmp == "unknown" ]]; then
-      echo -e "${RED}Klippy state: ${printer_state}.${DEFAULT} Unable to" \
-      "collect ${mcu} firmware version"
+      echo -e "${RED}Klippy 状态：${printer_state}。无法读取 ${mcu} 的固件版本。${DEFAULT}"
       return 0
     fi
 

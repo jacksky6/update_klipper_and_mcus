@@ -95,14 +95,14 @@ cd ~
 git clone https://github.com/jacksky6/update_klipper_and_mcus.git ukam
 ```
 
-首次运行以下命令会创建所需目录，并复制示例 `mcus.ini`：
+首次运行以下命令时，UKAM 会提示本机尚未初始化，并询问是否创建所需目录和示例 `mcus.ini`：
 
 ```
 cd ukam
 ./ukam.sh
 ```
 
-首次运行不会更新 Klipper；请编辑 `~/printer_data/config/ukam/mcus.ini` 后再运行 UKAM 进行 MCU 更新。
+确认初始化后，UKAM 不会更新 Klipper 或刷写 MCU，而是提示编辑 `~/printer_data/config/ukam/mcus.ini`。完成配置后再次运行 UKAM，即可进入 MCU 固件管理菜单。
 
 ## 通过 Moonraker 更新 UKAM
 
@@ -119,7 +119,13 @@ is_system_service: False
 
 ## 使用方法
 
-在终端运行 `~/<脚本目录>/ukam.sh`。可用选项如下。
+在终端运行 `~/<脚本目录>/ukam.sh` 会显示 MCU 固件状态表，不会立即刷写。表中会列出 `mcus.ini` 的全部已配置 MCU、当前固件版本、本机 Klipper/Kalico 对应的目标版本及更新状态。
+
+在菜单中输入 MCU 前的序号可更新单个设备；输入 `a` 可更新全部需要更新的 MCU；输入 `r` 刷新版本列表；输入 `q` 退出。单个或批量更新结束后，UKAM 会刷新列表并回到菜单。
+
+选择版本已匹配的单个 MCU 时，UKAM 会询问是否仍要强制重刷。选择 `a` 批量更新时，版本已匹配的 MCU 会被跳过。
+
+可用选项如下。
 
 ### 选项
 
@@ -131,27 +137,14 @@ is_system_service: False
 UKAM 是一个 Klipper MCU 固件更新脚本。
 
 可选参数：<config_file> 指定使用的配置文件，默认为 'mcus.ini'
-  -f, --firmware             即使固件版本一致，也强制更新 MCU 固件。
   -m, --menuconfig           为所有 MCU 显示 menuconfig（默认不显示）。
-  -q, --quiet                静默模式：自动执行所需操作，跳过 MENUCONFIG！
   -v, --verbose              用于调试，显示已解析的配置。
   -h, --help                 显示此帮助信息并退出。
 ```
 
-#### `-f`、`--firmware`：强制更新 MCU
-
-即使 MCU 固件版本与本机 Klipper/Kalico 版本一致，也强制构建并刷写固件。
-
 #### `-m`、`--menuconfig`
 
 在构建固件前执行 `make menuconfig`。不带此选项时，只有在 MCU 的配置文件不存在时才会显示 `menuconfig`。
-
-#### `-q`、`--quiet`：静默模式很危险！
-
-静默模式会跳过所有交互，直接完成已配置的更新。但请注意：
-
-- 首次必须至少以交互模式运行一次。
-- Klipper/Kalico 更新可能新增、删除或修改 `menuconfig` 选项，而已有配置文件不会自动更新，进而可能导致构建失败。
 
 ## 主机端更新
 
@@ -170,7 +163,7 @@ UKAM 不管理 Klipper、Moonraker、Mainsail 或 Fluidd 的安装、更新和�
 - `config_name`（可选）：`menuconfig` 使用的配置文件名称。多个 MCU 条目可共用同一个 `config_name`。参见[换刀系统配置示例](#换刀系统usb-连接)。
 - `is_klipper_fw`（可选）：`true|false`，决定是否构建 Klipper 固件。默认情况下，以 `mcu` 开头的节为 `true`，其他类型的节（如 `beacon`、`crampon`、`high_resolution_filament_sensor`、`scanner` 等）为 `false`。参见[非 Klipper 固件示例](#非-klipper-固件)。
 - `action_command`（必填）：固件构建后执行的命令，用于准备、刷写或开关 MCU。可以用 `;` 分隔命令，或在同一节中写入多个 `action_command`；它们会按出现顺序执行。
-- `quiet_command`：与 `action_command` 相同，但在静默模式中不输出标准输出。
+- `quiet_command`：与 `action_command` 相同，但不输出标准输出。
 
 刷写命令取决于 MCU 和所选刷写方式，例如 `dfu-util`、`make flash`、`flashtool`、`flash_sdcard`、`mount/cp/umount` 等。请查阅开发板文档，选择正确的命令。
 
@@ -179,7 +172,7 @@ UKAM 不管理 Klipper、Moonraker、Mainsail 或 Fluidd 的安装、更新和�
 > 辅助工具可以简化进入引导加载程序的过程（感谢 @beavis）：可使用 `bootloader_serial.py`、`bootloader_usb.py` 或较新的 `enter_bootloader`。
 >
 > ```
-> Usage: enter_bootloader -t <usb|serial|can> -d <serial> [-b baudrate] | -u <canbus_uuid>
+> 用法：enter_bootloader -t <usb|serial|can> -d <serial> [-b baudrate] | -u <canbus_uuid>
 >    -t     当前固件的连接类型（serial|usb|can）
 >    -d     串口标识，仅用于 serial 和 usb（/dev/ttyAMA0、/dev/serial/by-id/...）
 >    -b     波特率；默认值为 250000

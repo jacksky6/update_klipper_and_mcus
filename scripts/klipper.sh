@@ -23,7 +23,7 @@ function find_klipper_venv() {
   if [ -d "$venv_dir" ]; then
     echo "$venv_dir/bin/python"
   else
-    error_exit "virtual-env not found at $venv_dir"
+    error_exit "未在 $venv_dir 找到 Python 虚拟环境"
   fi
 }
 
@@ -38,11 +38,12 @@ function klipperservice {
   [[ "$1" = "start" ]] && str="ing" && $klipperrunning && return 0
   [[ "$1" = "stop" ]] && str="ping" && ! $klipperrunning && return 0
   klipperrunning=false
-  if $ERROR && ! prompt "${RED}An error occured !
-Do you want to restart ${APP} anyway ?" n; then
+  if $ERROR && ! prompt "${RED}操作发生错误！
+仍要重启 ${APP} 吗？" n; then
    return 0
   fi
-  echo -e "${YELLOW}${1^}$str Klipper service${DEFAULT}"
+  [[ "$1" = "start" ]] && action="启动" || action="停止"
+  echo -e "${YELLOW}${action} Klipper 服务${DEFAULT}"
   sudo systemctl $1 klipper
   return 0
 }

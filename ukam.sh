@@ -38,9 +38,9 @@ ukam_version() {
     2>/dev/null)
   s_remote=$(git -C $ukam_path describe "origin/$(git -C $ukam_path rev-parse \
     --abbrev-ref HEAD)" --always --tags --long 2>/dev/null)
-  [[ ! $s_version = "" ]] && echo -e "  current version $s_version"
-  [[ ! $s_version = "$s_remote"* ]] && ! $QUIET &&
-    echo -e "  new version available $s_remote"
+  [[ ! $s_version = "" ]] && echo -e "  当前版本：$s_version"
+  [[ ! $s_version = "$s_remote"* ]] &&
+    echo -e "  有可用新版本：$s_remote"
   return 0
 }
 
@@ -51,56 +51,78 @@ function splash() {
   | ${BLUE}    / / / / ,<  / /| | / /|_/ /   ${LIGHT_MAGENTA} |
   | ${MAGENTA}   / /_/ / /| |/ ___ |/ /  / /    ${LIGHT_MAGENTA} |
   | ${RED}   \____/_/ |_/_/  |_/_/  /_/     ${LIGHT_MAGENTA} |          
-  |       — Update — Mcus —       |
-  ++${WHITE}       v0.0.9 Infinite Idle       ${LIGHT_MAGENTA}++
+  |       — 更新 MCU 固件 —       |
+  ++${WHITE}        v0.0.9 中文维护版        ${LIGHT_MAGENTA}++
   "
   ukam_version
 }
 
 # Define the main function
 function main() {
+  if [[ ! -f "$ukam_config/mcus.ini" ]]; then
+    echo ""
+    ui_rule
+    echo -e "${CYAN}  首次运行初始化${DEFAULT}"
+    ui_rule
+    echo "  检测到这是首次运行，本机尚未安装 UKAM 配置。"
+    echo "  将创建配置目录并安装示例配置文件："
+    echo "  $ukam_config/mcus.ini"
+    echo ""
+
+    if ! prompt "是否现在初始化 UKAM？"; then
+      echo -e "${YELLOW}  已取消初始化，未修改任何文件。${DEFAULT}"
+      return 0
+    fi
+
+    echo ""
+    link_config
+    echo ""
+    ui_rule
+    echo -e "${GREEN}  初始化完成${DEFAULT}"
+    ui_rule
+    echo "  请编辑以下文件，填写 MCU 的刷写配置："
+    echo "  $ukam_config/mcus.ini"
+    echo ""
+    echo "  配置完成后，再次运行：./ukam.sh"
+    echo ""
+    return 0
+  fi
+
   link_config
   get_klipper_vars
   load_mcus_config
   get_mcus_version
   show_config
 
-  echo -e "\n${BLUE}-- Update Mcus --${DEFAULT}"
-  update_mcus          # call the update_mcus function
-  klipperservice start # start the Klipper service
+  show_mcu_update_menu
 
   if $ERROR; then
-    echo -e "\n    ${RED}Unfortunately something went wrong ! :("
-    echo -e "       Sorry, no bed engraving today.\n${DEFAULT}"
+    echo -e "\n    ${RED}操作过程中发生错误。"
+    echo -e "       请检查上方日志后重试。\n${DEFAULT}"
 
     exit 1
   fi
 
-  echo -e "\n    ${GREEN}All operations done ! Bye !"
-  echo -e "      Happy bed engraving ! ;)\n${DEFAULT}"
+  echo -e "\n    ${GREEN}操作结束。\n${DEFAULT}"
 
   exit 0
 }
 
 if [ "$EUID" -eq 0 ]; then
-  echo -e "${RED}UKAM scripts must not be run as root!" >&2
+  echo -e "${RED}请不要以 root 用户运行 UKAM！" >&2
   exit 1
 fi
 
-FIRMWAREONLY=false
 HELP=false
 MENUCONFIG=false
-QUIET=false
 VERBOSE=false
 APP=unknown
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  -f | --firmware) FIRMWAREONLY=true ;;
   -h | --help) HELP=true ;;
   -m | --menuconfig) MENUCONFIG=true ;;
-  -q | --quiet) QUIET=true ;;
   -v | --verbose) VERBOSE=true ;;
   -* | --*) HELP=true ;;
   *)
