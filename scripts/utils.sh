@@ -14,8 +14,11 @@ EOF
 }
 
 function ui_rule() {
-  printf '%0.s━' {1..76}
-  printf '\n'
+  local width="${1:-76}"
+  local rule
+
+  printf -v rule '%*s' "$width" ''
+  printf '%s\n' "${rule// /━}"
 }
 
 function ui_center() {

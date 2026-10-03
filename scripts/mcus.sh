@@ -379,10 +379,14 @@ function show_mcu_update_menu() {
 
   while true; do
     clear 2>/dev/null
-    ui_rule
-    echo -e "${CYAN}  Klipper固件自动刷写工具${DEFAULT}"
-    echo "  本地 ${k_local_name} 版本：${k_local_version}"
-    ui_rule
+    printf '%s' "$LIGHT_CYAN"
+    ui_rule 100
+    ui_center "【 Klipper固件自动刷写工具 】" 100
+    printf '%s\n' "$DEFAULT"
+    ui_center "本地 ${k_local_name} 版本：${k_local_version}" 100
+    printf '%s' "$LIGHT_CYAN"
+    ui_rule 100
+    printf '%s' "$DEFAULT"
     echo ""
 
     if [ ${#mcu_order[@]} -eq 0 ]; then
@@ -428,14 +432,14 @@ function show_mcu_update_menu() {
     done
 
     echo ""
-    ui_rule
+    ui_rule 100
     echo -e "${CYAN}  操作${DEFAULT}"
     echo "  [序号]  更新指定 MCU"
     echo "  [A]     更新全部需要更新的 MCU"
     echo "  [M]     配置 MCU 编译选项"
     echo "  [R]     刷新版本列表"
     echo "  [Q]     退出"
-    ui_rule
+    ui_rule 100
     read -r -p "${CYAN}  请输入选项：${DEFAULT}" choice
 
     case "${choice,,}" in
